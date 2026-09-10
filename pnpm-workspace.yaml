@@ -7,3 +7,34 @@ allowBuilds:
   protobufjs: false
 
 autoInstallPeers: true
+
+# Upstream @deepseek-ai/dsh-client-ui-primitives@0.1.5-rc.1 publishes an empty
+# "dependencies" map while its built lib/index.js still imports these packages.
+# DSH 0.1.2-rc.1 declared them; 0.1.5-rc.1 dropped the declarations. The host
+# checkout hides the defect because several of its own workspace packages
+# declare clsx/shiki/katex and hoist them into node_modules/.pnpm/node_modules,
+# which a standalone plugin install never has. Restore the upstream ranges so a
+# fresh install of this plugin resolves the client UI.
+packageExtensions:
+  '@deepseek-ai/dsh-client-ui-primitives':
+    dependencies:
+      '@shikijs/langs': ^4.3.1
+      '@types/mdast': ^4.0.4
+      anser: ^2.3.5
+      clsx: ^2.0.0
+      katex: ^0.16.47
+      mdast-util-from-markdown: ^2.0.3
+      mdast-util-gfm: ^3.1.0
+      mdast-util-math: ^3.0.0
+      micromark-core-commonmark: ^2.0.3
+      micromark-extension-gfm: ^3.0.0
+      micromark-extension-math: ^3.1.0
+      micromark-factory-space: ^2.0.1
+      micromark-util-character: ^2.1.1
+      micromark-util-classify-character: ^2.0.1
+      micromark-util-sanitize-uri: ^2.0.1
+      micromark-util-symbol: ^2.0.1
+      micromark-util-types: ^2.0.2
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      shiki: ^4.3.1
