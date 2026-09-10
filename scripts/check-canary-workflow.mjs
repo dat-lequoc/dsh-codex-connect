@@ -30,28 +30,35 @@ function assertContract(name, condition) {
 
 assertContract('declared canary checks the full same-artifact matrix without a stale version override', /run: pnpm --silent run check:dsh-matrix/u.test(declaredWorkflow) && !/DSH_VERSION:/u.test(declaredWorkflow))
 assertContract('package exposes the declared matrix check', packageJson.scripts?.['check:dsh-matrix'] === 'node scripts/check-dsh-matrix.mjs')
-const matrixVersions = ['0.1.2-rc.1', '0.1.5-alpha.1', '0.1.5-rc.1']
-const matrixReports = matrixVersions.map(dshVersion => ({
-  schemaVersion: 1, dshVersion, plugin: 'dsh-codex-connect', pluginVersion: '0.1.0-alpha.4.33',
+const matrixVersions = JSON.parse(readFileSync(new URL('../compatibility.json', import.meta.url), 'utf8')).dshPluginApi.versions
+const pluginVersion = packageJson.version
+const matrixReport = dshVersion => ({
+  schemaVersion: 1, dshVersion, plugin: 'dsh-codex-connect', pluginVersion,
   pluginArtifactSha256: 'a'.repeat(64), defaultsUnchanged: true,
   capabilities: { enableProxy: false, enableSearch: false, enableImageTool: false, enableImageGeneration: false, enableAutoReview: false },
   runtime: { schemaVersion: 1, provider: 'openai-codex', modelCount: 8, reasoningModelCount: 8, preparedModelCount: 8, disposalVerified: true },
-}))
-validateDshMatrix(matrixReports, matrixVersions, '0.1.0-alpha.4.33')
-for (const [name, change] of [
-  ['missing host', reports => reports.pop()],
-  ['different package bytes', reports => { reports[1].pluginArtifactSha256 = 'b'.repeat(64) }],
-  ['wrong host version', reports => { reports[1].dshVersion = reports[0].dshVersion }],
-  ['wrong plugin version', reports => { reports[1].pluginVersion = '0.1.0-alpha.4.32' }],
-  ['failed disposal', reports => { reports[1].runtime.disposalVerified = false }],
-  ['unprepared model', reports => { reports[1].runtime.preparedModelCount = 7 }],
-  ['missing request preparation', reports => { delete reports[1].runtime.preparedModelCount }],
-  ['changed optional default', reports => { reports[1].capabilities.enableSearch = true }],
+})
+const matrixReports = matrixVersions.map(matrixReport)
+assertContract('the declared matrix has at least one exact host target', matrixVersions.length >= 1)
+validateDshMatrix(matrixReports, matrixVersions, pluginVersion)
+// Cross-host rejections need more than one target, so they use a two-host
+// fixture; the declared matrix itself is single-version.
+const multiHostVersions = ['0.1.5-rc.1', '0.1.6-alpha.1']
+const multiHostReports = multiHostVersions.map(matrixReport)
+for (const [name, versions, change] of [
+  ['missing host', matrixVersions, reports => reports.pop()],
+  ['different package bytes', multiHostVersions, reports => { reports[1].pluginArtifactSha256 = 'b'.repeat(64) }],
+  ['wrong host version', multiHostVersions, reports => { reports[1].dshVersion = reports[0].dshVersion }],
+  ['wrong plugin version', matrixVersions, reports => { reports[0].pluginVersion = '0.1.0-alpha.4.32' }],
+  ['failed disposal', matrixVersions, reports => { reports[0].runtime.disposalVerified = false }],
+  ['unprepared model', matrixVersions, reports => { reports[0].runtime.preparedModelCount = 7 }],
+  ['missing request preparation', matrixVersions, reports => { delete reports[0].runtime.preparedModelCount }],
+  ['changed optional default', matrixVersions, reports => { reports[0].capabilities.enableSearch = true }],
 ]) {
-  const reports = structuredClone(matrixReports)
+  const reports = versions === multiHostVersions ? structuredClone(multiHostReports) : structuredClone(matrixReports)
   change(reports)
   let rejected = false
-  try { validateDshMatrix(reports, matrixVersions, '0.1.0-alpha.4.33') } catch { rejected = true }
+  try { validateDshMatrix(reports, versions, pluginVersion) } catch { rejected = true }
   assertContract(`declared matrix rejects ${name}`, rejected)
 }
 
@@ -100,15 +107,15 @@ assertContract('open trackers receive a changed bounded state', /github\.rest\.i
 assertContract('confirmed failure leaves the workflow failed', /Fail after two unsuccessful checks[\s\S]*?run: exit 1/.test(workflow))
 
 const trackingMetadata = {
-  runUrl: 'https://github.com/franksong2702/dsh-codex-connect/actions/runs/123',
+  runUrl: 'https://github.com/dat-lequoc/dsh-codex-connect/actions/runs/123',
   pluginCommit: '0123456789abcdef',
 }
 const candidateReport = overrides => ({
   status: 'pass',
   classification: 'candidate-compatible',
   channel: 'alpha',
-  supportedVersion: '0.1.2-rc.1',
-  candidateVersion: '0.1.2-rc.2',
+  supportedVersion: '0.1.5-rc.1',
+  candidateVersion: '0.1.6-alpha.1',
   stage: 'isolated-install',
   nodeVersion: 'v24.15.0',
   pluginCommit: null,
@@ -119,7 +126,7 @@ const passedTracking = buildCanaryTrackingIssue(candidateReport(), undefined, tr
 assertContract(
   'a passing newer candidate becomes a preliminary validation tracker',
   passedTracking?.state === 'passed-needs-full-validation'
-    && passedTracking.marker === '<!-- dsh-canary:0.1.2-rc.2 -->'
+    && passedTracking.marker === '<!-- dsh-canary:0.1.6-alpha.1 -->'
     && passedTracking.label === 'enhancement'
     && passedTracking.body.includes('preliminary evidence only'),
 )
@@ -158,7 +165,7 @@ assertContract(
 )
 assertContract('mismatched retry candidates fail closed', (() => {
   try {
-    buildCanaryTrackingIssue(candidateReport(), candidateReport({ candidateVersion: '0.1.2-alpha.7' }), trackingMetadata)
+    buildCanaryTrackingIssue(candidateReport(), candidateReport({ candidateVersion: '0.1.6-alpha.2' }), trackingMetadata)
     return false
   } catch {
     return true

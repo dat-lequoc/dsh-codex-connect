@@ -2,32 +2,14 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { parseOpenAICodexVerifiedCompatibility } from '../src/update.ts'
 
+// One supported host means one published verification record. Earlier hosts are
+// unsupported, so their historical pairings are no longer part of the contract.
 const catalog = {
   schemaVersion: 1 as const,
   checkedAt: '2026-09-10',
   latestDshVersion: '0.1.5-rc.1',
   pluginVersions: [
-    { version: '0.1.0-alpha.4.14', verifiedDshVersions: ['0.1.0-rc.7'] },
-    { version: '0.1.0-alpha.4.15', verifiedDshVersions: ['0.1.1-rc.2'] },
-    { version: '0.1.0-alpha.4.16', verifiedDshVersions: ['0.1.1-rc.2'] },
-    { version: '0.1.0-alpha.4.17', verifiedDshVersions: ['0.1.1-rc.2'] },
-    { version: '0.1.0-alpha.4.18', verifiedDshVersions: ['0.1.1-rc.2'] },
-    { version: '0.1.0-alpha.4.19', verifiedDshVersions: ['0.1.1-rc.2'] },
-    { version: '0.1.0-alpha.4.20', verifiedDshVersions: ['0.1.1-rc.2'] },
-    { version: '0.1.0-alpha.4.21', verifiedDshVersions: ['0.1.1-rc.2'] },
-    { version: '0.1.0-alpha.4.22', verifiedDshVersions: ['0.1.2-alpha.2'] },
-    { version: '0.1.0-alpha.4.23', verifiedDshVersions: ['0.1.2-alpha.2'] },
-    { version: '0.1.0-alpha.4.24', verifiedDshVersions: ['0.1.2-alpha.5'] },
-    { version: '0.1.0-alpha.4.25', verifiedDshVersions: ['0.1.2-alpha.5'] },
-    { version: '0.1.0-alpha.4.26', verifiedDshVersions: ['0.1.2-rc.1'] },
-    { version: '0.1.0-alpha.4.27', verifiedDshVersions: ['0.1.2-rc.1'] },
-    { version: '0.1.0-alpha.4.28', verifiedDshVersions: ['0.1.2-rc.1'] },
-    { version: '0.1.0-alpha.4.29', verifiedDshVersions: ['0.1.2-rc.1'] },
-    { version: '0.1.0-alpha.4.30', verifiedDshVersions: ['0.1.2-rc.1'] },
-    { version: '0.1.0-alpha.4.31', verifiedDshVersions: ['0.1.2-rc.1'] },
-    { version: '0.1.0-alpha.4.32', verifiedDshVersions: ['0.1.2-rc.1'] },
-    { version: '0.1.0-alpha.4.33', verifiedDshVersions: ['0.1.2-rc.1', '0.1.5-alpha.1'] },
-    { version: '0.1.0-alpha.4.34', verifiedDshVersions: ['0.1.2-rc.1', '0.1.5-alpha.1', '0.1.5-rc.1'] },
+    { version: '0.1.0-alpha.4.34', verifiedDshVersions: ['0.1.5-rc.1'] },
   ],
 }
 
@@ -45,7 +27,7 @@ describe('Codex Connect verified DSH compatibility', () => {
     expect(parseOpenAICodexVerifiedCompatibility({ ...catalog, schemaVersion: 2 })).toBeUndefined()
     expect(parseOpenAICodexVerifiedCompatibility({
       ...catalog,
-      pluginVersions: [catalog.pluginVersions[1], catalog.pluginVersions[1]],
+      pluginVersions: [catalog.pluginVersions[0], { ...catalog.pluginVersions[0] }],
     })).toBeUndefined()
     expect(parseOpenAICodexVerifiedCompatibility({
       ...catalog,

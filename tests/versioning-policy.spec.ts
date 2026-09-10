@@ -26,11 +26,10 @@ describe('independent plugin versioning', () => {
     const parsed = parseOpenAICodexVerifiedCompatibility(value)
     expect(parsed?.schemaVersion).toBe(1)
     expect(parsed?.pluginVersions).toEqual(expect.arrayContaining([
-      { version: '0.1.0-alpha.4.14', verifiedDshVersions: ['0.1.0-rc.7'] },
-      { version: '0.1.0-alpha.4.29', verifiedDshVersions: ['0.1.2-rc.1'] },
+      { version: '0.1.0-alpha.4.34', verifiedDshVersions: ['0.1.5-rc.1'] },
     ]))
     expect(parseOpenAICodexVerifiedCompatibility({
-      '0.1.0-alpha.4.29': { primary_target: '0.1.2-rc.1', verified_with: ['0.1.2-rc.1'] },
+      '0.1.0-alpha.4.34': { primary_target: '0.1.5-rc.1', verified_with: ['0.1.5-rc.1'] },
     })).toBeUndefined()
   })
 

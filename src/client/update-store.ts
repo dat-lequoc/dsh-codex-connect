@@ -5,7 +5,7 @@ import type { OpenAICodexUpdateHighlight, OpenAICodexUpdateResult } from '../upd
 import { OPENAI_CODEX_UPDATE_PATH } from '../update-paths.ts'
 import { requestJson } from './request-json.ts'
 
-export const OPENAI_CODEX_REPOSITORY_URL = 'https://github.com/franksong2702/dsh-codex-connect'
+export const OPENAI_CODEX_REPOSITORY_URL = 'https://github.com/dat-lequoc/dsh-codex-connect'
 export const OPENAI_CODEX_UPDATE_CACHE_KEY = 'dsh-codex-connect:update-check'
 export const OPENAI_CODEX_UPDATE_DISMISSED_KEY = 'dsh-codex-connect:update-dismissed'
 export const OPENAI_CODEX_UPDATE_CACHE_TTL_MS = 24 * 60 * 60 * 1_000

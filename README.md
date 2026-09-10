@@ -16,15 +16,15 @@ This guide describes the published pairing below. Check `dsh --version` first; f
 
 | Requirement | Verified pairing |
 |---|---|
-| Codex Connect | `0.1.0-alpha.4.33` |
-| DeepSeek Harness | `0.1.2-rc.1` or `0.1.5-alpha.1` |
+| Codex Connect | `0.1.0-alpha.4.34` |
+| DeepSeek Harness | `0.1.5-rc.1` |
 | Node.js | `^22.19.0 \|\| >=24.0.0` |
 | Account | ChatGPT OAuth with access to the requested Codex model; availability is decided by OpenAI |
 
 ### 1. Install
 
 ```sh
-dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.33
+dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.34
 dsh web
 ```
 
@@ -46,7 +46,7 @@ dsh plugin --profile web exec dsh-codex-connect doctor --json
 `status --json` exits `0` when signed in and `1` when signed out, without starting OAuth. `doctor --json` reports local installation diagnostics without a network request or raw credentials. A passing diagnostic is not proof of model access; verify that with an actual request.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/franksong2702/dsh-codex-connect/main/docs/assets/en/hero.jpg" alt="Codex Connect — ChatGPT OAuth for DeepSeek Harness" width="100%">
+  <img src="https://raw.githubusercontent.com/dat-lequoc/dsh-codex-connect/main/docs/assets/en/hero.jpg" alt="Codex Connect — ChatGPT OAuth for DeepSeek Harness" width="100%">
 </p>
 
 ## Core capabilities
@@ -58,7 +58,7 @@ dsh plugin --profile web exec dsh-codex-connect doctor --json
 - **Plugin updates:** check for newer Codex Connect releases without installing anything or recommending changes to DSH. Host compatibility is available through explicit local diagnostics.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/franksong2702/dsh-codex-connect/main/docs/assets/composer-capabilities.jpg" alt="Fast Mode and quota controls in the DeepSeek Harness Composer" width="820">
+  <img src="https://raw.githubusercontent.com/dat-lequoc/dsh-codex-connect/main/docs/assets/composer-capabilities.jpg" alt="Fast Mode and quota controls in the DeepSeek Harness Composer" width="820">
 </p>
 
 ## Optional capabilities

@@ -1,6 +1,6 @@
 # Installation Runbook for CLI Agents
 
-Alpha 4.33 is verified with DSH `0.1.2-rc.1` and pi-ai `0.84.4` within `^0.84.2`, and with DSH `0.1.5-alpha.1` and pi-ai `0.85.1`.
+Alpha 4.34 is verified with DSH `0.1.5-rc.1` and pi-ai `0.85.1`. That is the only supported pairing; older DSH plugin API versions are unsupported.
 
 Install `dsh-codex-connect` into one requested DeepSeek Harness profile without changing its current default model, search route, global configuration, or OAuth state.
 
@@ -20,55 +20,26 @@ Check `dsh --version` before changing the requested profile. Use `dsh --help` to
 
 | Installed DSH version | Codex Connect version to pin |
 | --- | --- |
-| `0.1.0-rc.7` | `0.1.0-alpha.4.14` |
-| `0.1.1-rc.2` | `0.1.0-alpha.4.21` |
-| `0.1.2-alpha.2` | `0.1.0-alpha.4.23` |
-| `0.1.2-rc.1` | `0.1.0-alpha.4.33` |
-| `0.1.2-alpha.5` | `0.1.0-alpha.4.25` |
-| `0.1.5-alpha.1` | `0.1.0-alpha.4.33` |
+| `0.1.5-rc.1` | `0.1.0-alpha.4.34` |
 
 If your exact DSH version is unknown or not listed, preserve the installed host, report that the combination is unverified, and verify it before making installation changes. A missing record does not prove incompatibility, and the catalog's latest verified DSH version is not the latest upstream release. Do not recommend upgrading or downgrading DSH merely to match a row. Investigate any specific failure and seek verification of the installed combination. Do not blindly install `dsh-codex-connect@alpha`: `alpha` is a moving tag, not a compatibility guarantee. Do not infer support for newer DSH versions from these rows.
 
-Alpha 4.33 requires one consistent DSH plugin API version: `0.1.2-rc.1` with `@earendil-works/pi-ai` `^0.84.2`, or `0.1.5-alpha.1` with pi-ai `0.85.1`; Node.js remains `^22.19.0 || >=24.0.0`. Mixed host versions and other DSH/pi-ai combinations remain unverified. Alpha 4.25 remains the verified choice for DSH `0.1.2-alpha.5`, Alpha 4.23 remains the verified choice for DSH `0.1.2-alpha.2`, Alpha 4.21 remains the verified choice for DSH `0.1.1-rc.2`, and staying on DSH `0.1.0-rc.7` means selecting Alpha 4.14. Changing DSH is a separate operation requiring the user's explicit request; a plugin update request does not authorize it. The repository's `pnpm --silent run check:compatibility` remains a strict development/release dependency gate, not a recommendation to change a user's host.
+Alpha 4.34 requires exactly one consistent DSH plugin API version: `0.1.5-rc.1` with `@earendil-works/pi-ai` `0.85.1`, and every `@deepseek-ai/dsh-*` package at that same version; Node.js remains `^22.19.0 || >=24.0.0`. Mixed host versions and every other DSH/pi-ai combination are unsupported. Codex Connect no longer targets earlier DSH plugin API versions, so an older host must be upgraded before installation; that upgrade is a separate operation requiring the user's explicit request, and a plugin update request does not authorize it. The repository's `pnpm --silent run check:compatibility` remains a strict development/release dependency gate, not a recommendation to change a user's host.
 
-The Alpha 4.33 rows reflect same-artifact isolated installation and runtime checks, bounded real-account calls, and isolated upgrades from Alpha 4.32. Fresh OAuth and manual callback acceptance used the real implementation through a temporary acceptance page. See [.github/ALPHA_433_RELEASE_READINESS.md](https://github.com/franksong2702/dsh-codex-connect/blob/main/.github/ALPHA_433_RELEASE_READINESS.md) for commands and verification limits. Historical rows remain the repository's existing verification record. This guidance does not change upstream DSH behavior or resolve [Issue #64](https://github.com/franksong2702/dsh-codex-connect/issues/64).
+The Alpha 4.34 row reflects same-artifact isolated installation and runtime checks, bounded real-account calls, and isolated upgrades from Alpha 4.33. Fresh OAuth and manual callback acceptance used the real implementation through a temporary acceptance page. Release readiness records in [.github/](https://github.com/dat-lequoc/dsh-codex-connect/tree/main/.github) and [docs/agent-notes/](https://github.com/dat-lequoc/dsh-codex-connect/tree/main/docs/agent-notes) describe the commands and verification limits, including the earlier [Alpha 4.33 readiness record](https://github.com/dat-lequoc/dsh-codex-connect/blob/main/.github/ALPHA_433_RELEASE_READINESS.md). This guidance does not change upstream DSH behavior or resolve [Issue #64](https://github.com/dat-lequoc/dsh-codex-connect/issues/64).
 
 ### Install the selected version and validate
 
 1. Complete the version selection above. The commands below use `web`; substitute only the requested profile.
-2. Install the selected exact version. For DSH `0.1.0-rc.7`:
+2. Install the selected exact version. For DSH `0.1.5-rc.1`, use Alpha 4.34:
 
    ```sh
-   dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.14
+   dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.34
    ```
 
-   For DSH `0.1.1-rc.2`, use Alpha 4.21:
+   If npm is unavailable after the matching GitHub prerelease is created, use `dsh plugin --profile web add 'github:dat-lequoc/dsh-codex-connect#v0.1.0-alpha.4.34'` only for the DSH `0.1.5-rc.1` combination. The Git tag exists only after that prerelease is published; do not use this fallback before then.
 
-   ```sh
-   dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.21
-   ```
-
-   For DSH `0.1.2-alpha.2`, use Alpha 4.23:
-
-   ```sh
-   dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.23
-   ```
-
-   For DSH `0.1.2-rc.1` or `0.1.5-alpha.1`, use Alpha 4.33:
-
-   ```sh
-   dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.33
-   ```
-
-   For DSH `0.1.2-alpha.5`, use Alpha 4.25:
-
-   ```sh
-   dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.25
-   ```
-
-   If npm is unavailable after the matching GitHub prerelease is created, use `dsh plugin --profile web add 'github:franksong2702/dsh-codex-connect#v0.1.0-alpha.4.21'` only for the DSH `0.1.1-rc.2` combination, `dsh plugin --profile web add 'github:franksong2702/dsh-codex-connect#v0.1.0-alpha.4.23'` only for the DSH `0.1.2-alpha.2` combination, `dsh plugin --profile web add 'github:franksong2702/dsh-codex-connect#v0.1.0-alpha.4.25'` only for the DSH `0.1.2-alpha.5` combination, or `dsh plugin --profile web add 'github:franksong2702/dsh-codex-connect#v0.1.0-alpha.4.33'` only for the DSH `0.1.2-rc.1` or `0.1.5-alpha.1` combinations.
-
-3. Run `dsh web --help` once to compose the installed profile without starting the server. DSH `0.1.2-rc.1` prepares profile plugin dependency fallback during this step.
+3. Run `dsh web --help` once to compose the installed profile without starting the server. DSH `0.1.5-rc.1` prepares profile plugin dependency fallback during this step.
 4. Run `dsh --profile web --dump-config` and require exactly one `llm-openai-codex` row loading `dsh-codex-connect`.
 5. Confirm the effective `agent-default-model` and `web.searchProvider` values are unchanged from before installation.
 6. Run secret-free diagnostics:
@@ -79,7 +50,7 @@ The Alpha 4.33 rows reflect same-artifact isolated installation and runtime chec
 
 7. If the user explicitly requests login, open **Settings → Plugins → Plugin configuration → Codex Connect**, or check `status` and then use `login` or `login --device-code`. OAuth approval belongs to the user.
 
-   Alpha 4.25 offers the same account actions in **Settings → Models → Openai-Codex**, plus a shared **More settings** dialog for model visibility, proxy, search, image, context-budget, and Auto-review controls. The original Plugin settings entry remains available; neither entry automatically starts login or changes model/search defaults.
+   Alpha 4.34 offers the same account actions in **Settings → Models → Openai-Codex**, plus a shared **More settings** dialog for model visibility, proxy, search, image, context-budget, and Auto-review controls. The original Plugin settings entry remains available; neither entry automatically starts login or changes model/search defaults.
 
    When signed out, select **Authorize**. When signed in, use **Sign out** or **View quota**; use **More settings** for plugin options. If authorization is abandoned, use **Reopen authorization** or **Cancel sign-in** and retry; cancellation does not delete an existing account. Pending authorization expires after 10 minutes by default (`oauthTimeoutMs` in plugin configuration, applied on load).
 

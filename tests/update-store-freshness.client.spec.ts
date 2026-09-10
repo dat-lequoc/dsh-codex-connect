@@ -50,7 +50,7 @@ it('does not schedule a recheck for a successful update result', async () => {
 
 it.each(['compatible', 'dsh-update-required', 'not-yet-compatible', 'unverified'])('ignores cached host verdict %s without scheduling host rechecks', async status => {
   localStorage.setItem(OPENAI_CODEX_UPDATE_CACHE_KEY, JSON.stringify({ checkedAt: Date.now(), result: {
-    ...result, currentDshVersion: '0.1.3-alpha.1', compatibility: { status, latestDshVersion: '0.1.2-rc.1' },
+    ...result, currentDshVersion: '0.1.3-alpha.1', compatibility: { status, latestDshVersion: '0.1.5-rc.1' },
   } }))
   const fetchMock = vi.fn(async () => Response.json(result))
   vi.stubGlobal('fetch', fetchMock)

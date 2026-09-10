@@ -94,7 +94,7 @@ describe('Codex Connect update route', () => {
       status: 'update-available',
       currentVersion: '0.1.0-alpha.4.14',
       latestVersion: '0.1.0-alpha.4.15',
-      releaseUrl: 'https://github.com/franksong2702/dsh-codex-connect/releases/tag/v0.1.0-alpha.4.15',
+      releaseUrl: 'https://github.com/dat-lequoc/dsh-codex-connect/releases/tag/v0.1.0-alpha.4.15',
       highlights: [],
       releaseName: 'Alpha 4.15',
       releaseNotes: 'Global update reminder',

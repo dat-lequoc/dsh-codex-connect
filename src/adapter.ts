@@ -148,7 +148,7 @@ function requestProvider(
   }
 }
 
-/** Build the pi-ai profile with the model-error index required by DSH 0.1.5-rc.1. */
+/** Build the pi-ai profile with the model-error index required by the declared DSH host. */
 export function createOpenAICodexProfile(
   provider: Provider,
   fastMode?: FastModeRegistry,

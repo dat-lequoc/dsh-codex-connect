@@ -51,7 +51,7 @@ describe('Codex Connect update metadata', () => {
       status: 'update-available',
       currentVersion: '0.1.0-alpha.4.14',
       latestVersion: '0.1.0-alpha.4.16',
-      releaseUrl: 'https://github.com/franksong2702/dsh-codex-connect/releases/tag/v0.1.0-alpha.4.16',
+      releaseUrl: 'https://github.com/dat-lequoc/dsh-codex-connect/releases/tag/v0.1.0-alpha.4.16',
       highlights: [],
       releaseName: 'Alpha 4.16 — update notes',
       releaseNotes: '<not-rendered-as-markdown>\n- Global update reminder',
@@ -158,7 +158,7 @@ describe('Codex Connect update metadata', () => {
   it('accepts only the fixed release URL and safe public response fields in the browser parser', () => {
     const valid = {
       status: 'update-available', currentVersion: '0.1.0-alpha.4.14', latestVersion: '0.1.0-alpha.4.15',
-      releaseUrl: 'https://github.com/franksong2702/dsh-codex-connect/releases/tag/v0.1.0-alpha.4.15',
+      releaseUrl: 'https://github.com/dat-lequoc/dsh-codex-connect/releases/tag/v0.1.0-alpha.4.15',
       highlights: [],
     }
     expect(parseOpenAICodexUpdateResult({ ...valid, releaseUrl: 'https://example.com/steal' })).toBeUndefined()

@@ -125,7 +125,7 @@ export class CodexCapabilityDiagnostics {
       && (!isSupportedDshPluginApiVersion(versions[name]!) || versions[name] !== dshVersion))
       || compatibility.status === 'incompatible' || compatibility.status === 'unverified'
     const runtime = mismatch
-      ? result('rejected', 'declared-version-mismatch', 'Use one declared DSH API version consistently: 0.1.2-rc.1 with pi-ai ^0.84.2, or 0.1.5-alpha.1 with pi-ai 0.85.1. DSH 0.1.0-rc.7 requires Codex Connect 0.1.0-alpha.4.14. Other combinations require verification.')
+      ? result('rejected', 'declared-version-mismatch', 'Use the one declared DSH API version consistently: DSH 0.1.5-rc.1 with pi-ai 0.85.1, and every @deepseek-ai/dsh-* package at that same version. Older DSH hosts are unsupported; other combinations require verification.')
       : missing || compatibility.status === 'unknown'
         ? result('unknown', 'version-metadata-unavailable', 'Run this command from the plugin installation in the intended profile.')
         : result('supported', 'declared-host-versions-match', 'Host package versions satisfy the declared requirements; this is not a live profile or browser compatibility test.')

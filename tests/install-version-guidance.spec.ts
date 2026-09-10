@@ -10,12 +10,7 @@ const shellBlocks = [...install.matchAll(/```sh\s*\n([\s\S]*?)```/gu)]
 
 describe('installation version guidance', () => {
   it.each([
-    ['0.1.0-rc.7', '0.1.0-alpha.4.14'],
-    ['0.1.1-rc.2', '0.1.0-alpha.4.21'],
-    ['0.1.2-alpha.2', '0.1.0-alpha.4.23'],
-    ['0.1.2-alpha.5', '0.1.0-alpha.4.25'],
-    ['0.1.2-rc.1', '0.1.0-alpha.4.33'],
-    ['0.1.5-alpha.1', '0.1.0-alpha.4.33'],
+    ['0.1.5-rc.1', '0.1.0-alpha.4.34'],
   ])('selects the recorded DSH %s / Codex Connect %s pair before installation', (dsh, plugin) => {
     expect(firstInstall).toBeGreaterThan(0)
     expect(compatibility.pluginVersions).toContainEqual(expect.objectContaining({
@@ -36,10 +31,10 @@ describe('installation version guidance', () => {
     expect(shellBlocks).not.toContain('dsh plugin --profile web add dsh-codex-connect@alpha')
   })
 
-  it('retains exact GitHub fallbacks for the latest releases when npm is unavailable', () => {
-    expect(install).toMatch(/npm is unavailable[^\n]*github:franksong2702\/dsh-codex-connect#v0\.1\.0-alpha\.4\.21/iu)
-    expect(install).toMatch(/npm is unavailable[^\n]*github:franksong2702\/dsh-codex-connect#v0\.1\.0-alpha\.4\.23/iu)
-    expect(install).toMatch(/npm is unavailable[^\n]*github:franksong2702\/dsh-codex-connect#v0\.1\.0-alpha\.4\.25/iu)
-    expect(install).toMatch(/npm is unavailable[^\n]*github:franksong2702\/dsh-codex-connect#v0\.1\.0-alpha\.4\.33/iu)
+  it('retains one exact GitHub fallback for the supported release when npm is unavailable', () => {
+    expect(install).toMatch(/npm is unavailable[^\n]*github:dat-lequoc\/dsh-codex-connect#v0\.1\.0-alpha\.4\.34/iu)
+    // Only the supported release keeps a fallback; historical tags are gone.
+    expect(install).not.toMatch(/github:[^\n]*#v0\.1\.0-alpha\.4\.(?:14|21|23|25|33)\b/iu)
+    expect(install).not.toContain('franksong2702')
   })
 })

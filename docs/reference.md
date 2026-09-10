@@ -10,7 +10,7 @@ OAuth credentials are stored on the DSH host and used there to authenticate and 
 
 Choose an `openai-codex` model in the normal Harness model picker. Model names remain canonical in every UI language. **More settings → Models** controls which models appear in discovery; hiding a model does not disable routing by its exact id.
 
-The Codex catalog comes from the installed `@earendil-works/pi-ai` package, not a live query of the account's available models. DSH `0.1.2-rc.1` uses pi-ai `^0.84.2`, which lacks `gpt-6-astra`; Codex Connect supplies that definition. Alpha 4.33 is also verified with DSH `0.1.5-alpha.1` and pi-ai `0.85.1`. Mixed host package versions and other DSH/pi-ai combinations remain unverified. With a native Astra entry, the plugin preserves its metadata and retains Low, Medium, High, Xhigh, and Max reasoning choices without modifying the installed catalog. Users do not need to upgrade pi-ai separately to select Astra. The exact verified pairs and acceptance limits are recorded in the release notes; dependency declarations alone do not establish verification. Neither catalog source proves account access.
+The Codex catalog comes from the installed `@earendil-works/pi-ai` package, not a live query of the account's available models. DSH `0.1.5-rc.1` uses pi-ai `0.85.1`, which already provides a native `gpt-6-astra` entry; Codex Connect preserves that metadata and adds calibrated Low, Medium, High, Xhigh, and Max reasoning choices without modifying the installed catalog. Only an older pi-ai catalog without Astra receives the plugin's own fallback definition. Mixed host package versions and any other DSH/pi-ai combination are unsupported. Users do not need to upgrade pi-ai separately to select Astra. The exact verified pair and acceptance limits are recorded in the release notes; dependency declarations alone do not establish verification. Neither catalog source proves account access.
 
 - Adding an account leaves the current account usable while authorization is pending.
 - Cancelling or timing out a new authorization preserves every existing account and closes accepted callback connections, including incomplete HTTP requests. After cancellation, the browser reads account labels and quota together before updating the view. Pending authorization expires after 10 minutes by default; `oauthTimeoutMs` accepts 1,000–1,800,000 milliseconds and is applied when the plugin loads.
@@ -31,7 +31,7 @@ For GPT Codex conversations, the Composer shows Fast Mode and quota:
 - **Quota bars** normally refresh every 60 seconds while signed in and show only the `5h` and `7d` windows returned by the server, with the exact remaining percentage and reset time. `gpt-5.3-codex-spark` uses its separate Spark bucket. Codex Connect never invents missing windows or suppresses returned windows based on a plan name.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/franksong2702/dsh-codex-connect/main/docs/assets/composer-capabilities.jpg" alt="Fast Mode and quota controls in the DeepSeek Harness Composer" width="820">
+  <img src="https://raw.githubusercontent.com/dat-lequoc/dsh-codex-connect/main/docs/assets/composer-capabilities.jpg" alt="Fast Mode and quota controls in the DeepSeek Harness Composer" width="820">
 </p>
 
 ## Optional capabilities
@@ -67,7 +67,7 @@ Direct connection is the default. An enabled credential-free HTTP(S) proxy appli
 Generated originals are stored under `$DSH_HOME/dsh-codex-connect/images/v1`; the conversation receives a separate DSH attachment preview. The result card reports dimensions and file sizes and can download either representation. Originals are owner-only, integrity-checked, and available only to the creating session and forks that inherited the result. Disabling or uninstalling the plugin does not delete those files automatically.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/franksong2702/dsh-codex-connect/main/docs/assets/en/image-generation.png" alt="GPT Image result with prompt, download actions, and image details" width="780">
+  <img src="https://raw.githubusercontent.com/dat-lequoc/dsh-codex-connect/main/docs/assets/en/image-generation.png" alt="GPT Image result with prompt, download actions, and image details" width="780">
 </p>
 
 ### Auto-review
@@ -116,7 +116,7 @@ The main plugin options are:
 
 ### Local installation diagnostics
 
-Published Alpha 4.33 can fail to list or prepare Codex models on DSH `0.1.5-rc.1` with `Cannot read properties of undefined (reading 'get')`. That host requires a per-model error index absent from the older plugin profile. Builds containing [the Issue #178 fix](https://github.com/franksong2702/dsh-codex-connect/issues/178) initialize the index; re-authorizing does not supply it. Choose an exact plugin release verified with your host version, not merely one with the same Alpha series.
+Published Alpha 4.33 can fail to list or prepare Codex models on DSH `0.1.5-rc.1` with `Cannot read properties of undefined (reading 'get')`. That host requires a per-model error index absent from the older plugin profile. Alpha 4.34, which contains [the Issue #178 fix](https://github.com/dat-lequoc/dsh-codex-connect/issues/178), initializes the index; re-authorizing does not supply it. Choose an exact plugin release verified with your host version, not merely one with the same Alpha series.
 
 Run `dsh plugin --profile web exec dsh-codex-connect doctor --json` to inspect local installation metadata without a network request. Compatibility statuses mean: `compatible` matches the declared version requirements, not a behavioral test; `unverified` identifies package versions outside the declared support set; `unknown` means required version metadata is missing or unreadable; `incompatible` identifies a Node version outside the declared engine requirement. The aggregate prioritizes `incompatible`, then `unknown`, then `unverified`. Doctor exits `1` for any non-compatible result or unsafe credential-file metadata; this does not authorize or recommend changing DSH.
 

@@ -23,4 +23,4 @@ The reviewer input uses conservative UTF-8 byte limits before network transmissi
 
 OpenAI documents Auto-review as a Codex feature, but does not promise the `codex-auto-review` OAuth route as a stable public API. The separate `auto-review-probe` command checks only whether the current OAuth route accepts one synthetic no-op assessment. Runtime failures always return to human approval; they never authorize execution.
 
-See [OpenAI Auto-review](https://learn.chatgpt.com/docs/sandboxing/auto-review), [OpenAI guardrails and approvals](https://developers.openai.com/api/docs/guides/agents/guardrails-approvals), and [Issue #84](https://github.com/franksong2702/dsh-codex-connect/issues/84).
+See [OpenAI Auto-review](https://learn.chatgpt.com/docs/sandboxing/auto-review), [OpenAI guardrails and approvals](https://developers.openai.com/api/docs/guides/agents/guardrails-approvals), and [Issue #84](https://github.com/dat-lequoc/dsh-codex-connect/issues/84).

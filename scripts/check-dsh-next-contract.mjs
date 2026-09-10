@@ -35,7 +35,7 @@ function assertContract(name, condition) {
   if (!condition) failures.push(name)
 }
 
-assertContract('JSON registry versions are accepted', parseRegistryVersion('"0.1.2-rc.1"\n') === '0.1.2-rc.1')
+assertContract('JSON registry versions are accepted', parseRegistryVersion('"0.1.5-rc.1"\n') === '0.1.5-rc.1')
 assertContract('plain registry versions are accepted', parseRegistryVersion('0.1.2') === '0.1.2')
 assertContract('invalid numeric prerelease identifiers are rejected', (() => {
   try {
@@ -168,24 +168,24 @@ const compatibilityFailure = version => ({
 })
 assertContract(
   'two matching compatibility failures are confirmed',
-  confirmedCompatibilityFailure(compatibilityFailure('0.1.2-rc.1'), compatibilityFailure('0.1.2-rc.1')),
+  confirmedCompatibilityFailure(compatibilityFailure('0.1.6-alpha.1'), compatibilityFailure('0.1.6-alpha.1')),
 )
 assertContract(
   'different candidate versions are not confirmed',
-  !confirmedCompatibilityFailure(compatibilityFailure('0.1.2-rc.1'), compatibilityFailure('0.1.2-rc.2')),
+  !confirmedCompatibilityFailure(compatibilityFailure('0.1.6-alpha.1'), compatibilityFailure('0.1.6-alpha.2')),
 )
 assertContract(
   'different candidate channels are not confirmed',
   !confirmedCompatibilityFailure(
-    compatibilityFailure('0.1.2-rc.1'),
-    { ...compatibilityFailure('0.1.2-rc.1'), channel: 'latest' },
+    compatibilityFailure('0.1.6-alpha.1'),
+    { ...compatibilityFailure('0.1.6-alpha.1'), channel: 'latest' },
   ),
 )
 assertContract(
   'infrastructure failures are not confirmed',
   !confirmedCompatibilityFailure(
-    compatibilityFailure('0.1.2-rc.1'),
-    { status: 'fail', classification: 'infrastructure', candidateVersion: '0.1.2-rc.1' },
+    compatibilityFailure('0.1.6-alpha.1'),
+    { status: 'fail', classification: 'infrastructure', candidateVersion: '0.1.6-alpha.1' },
   ),
 )
 assertContract(
@@ -225,7 +225,7 @@ const candidateDoctor = {
     status: 'unverified',
     node: { status: 'compatible' },
     packages: Object.fromEntries(['@deepseek-ai/dsh-llm', '@deepseek-ai/dsh-llm-pi-ai', '@earendil-works/pi-ai'].map(name => [name, {
-      supported: name === '@earendil-works/pi-ai' ? '^0.84.2 || 0.85.1' : '0.1.2-rc.1 || 0.1.5-alpha.1 || 0.1.5-rc.1',
+      supported: name === '@earendil-works/pi-ai' ? '0.85.1' : '0.1.5-rc.1',
       installed: name === '@earendil-works/pi-ai' ? '0.85.1' : '0.1.6-alpha.1',
       status: 'unverified',
     }])),
@@ -241,15 +241,15 @@ function doctorOutcome(report, options = candidateDoctorOptions, status = 1, std
   }
 }
 assertContract('issue 169: a valid unverified candidate doctor continues to runtime validation', doctorOutcome(candidateDoctor) === 'continue-runtime')
-assertContract('declared installation checks still reject unverified versions', doctorOutcome(candidateDoctor, { dshVersion: '0.1.2-rc.1' }) === 1)
+assertContract('declared installation checks still reject unverified versions', doctorOutcome(candidateDoctor, { dshVersion: '0.1.5-rc.1' }) === 1)
 const declaredDoctor = structuredClone(candidateDoctor)
 declaredDoctor.compatibility.status = 'compatible'
 for (const [name, entry] of Object.entries(declaredDoctor.compatibility.packages)) {
-  entry.installed = name === '@earendil-works/pi-ai' ? '0.84.4' : '0.1.2-rc.1'
+  entry.installed = name === '@earendil-works/pi-ai' ? '0.85.1' : '0.1.5-rc.1'
   entry.status = 'compatible'
 }
 assertContract('declared compatible diagnostics still pass', doctorOutcome(declaredDoctor, {}, 0) === 'continue-runtime')
-assertContract('compatible JSON cannot explain a nonzero doctor exit', doctorOutcome(declaredDoctor, { allowUndeclaredCanaryVersion: true, dshVersion: '0.1.2-rc.1' }) === 1)
+assertContract('compatible JSON cannot explain a nonzero doctor exit', doctorOutcome(declaredDoctor, { allowUndeclaredCanaryVersion: true, dshVersion: '0.1.5-rc.1' }) === 1)
 assertContract('zero exit does not exempt an unverified report from declared validation', doctorOutcome(candidateDoctor, {}, 0) === 1)
 assertContract('malformed candidate JSON remains a compatibility failure', doctorOutcome(null) === 1)
 for (const [name, mutate] of [

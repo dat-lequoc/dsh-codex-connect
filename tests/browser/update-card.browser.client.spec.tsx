@@ -58,9 +58,9 @@ describe('Codex Connect plugin update card in Chromium', () => {
       if (state === 'offline') throw new Error('offline')
       return json({
         status: state, currentVersion, latestVersion: state === 'up-to-date' ? currentVersion : latestVersion,
-        releaseUrl: 'https://github.com/franksong2702/dsh-codex-connect/releases/tag/v' + latestVersion,
+        releaseUrl: 'https://github.com/dat-lequoc/dsh-codex-connect/releases/tag/v' + latestVersion,
         highlights: [], currentDshVersion: '0.1.3-alpha.1',
-        compatibility: { status: 'not-yet-compatible', latestDshVersion: '0.1.2-rc.1' },
+        compatibility: { status: 'not-yet-compatible', latestDshVersion: '0.1.5-rc.1' },
       })
     })
     vi.stubGlobal('fetch', fetchMock)

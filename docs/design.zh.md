@@ -20,7 +20,7 @@ Host 将 `llm-openai-codex` 注册为插件自有的能力 settings namespace。
 
 ## 搜索与图片
 
-仅当 `enableSearch: true` 时注册 Codex 独立搜索提供方和不含凭据的请求事件。DSH `0.1.2-rc.1` 没有通过 settings 服务开放 WebRuntime 的 provider 选择，因此兼容适配器会先核对该版本的运行时字段，记录此前的提供方，并仅在能力开启期间选择 Codex。关闭能力或卸载插件时会恢复此前的提供方；如果另一个 owner 已经选择了更新的路由，则不会覆盖它。不支持的运行时会让能力启用失败，不会谎报路由已经变化。仅当 `enableImageTool: true` 且 tools、filesystem、attachments 服务存在时注册 `view_image`。本地文件继续受 Harness 文件系统边界与大小限制；远程图片只允许不含凭据的公共 HTTP(S)，所有 DNS 结果必须是公共单播地址，每次重定向都会重新验证，并把实际连接固定到已验证地址以关闭 DNS rebinding 缺口。
+仅当 `enableSearch: true` 时注册 Codex 独立搜索提供方和不含凭据的请求事件。受支持的 DSH 版本没有通过 settings 服务开放 WebRuntime 的 provider 选择，因此兼容适配器会先核对该版本的运行时字段，记录此前的提供方，并仅在能力开启期间选择 Codex。关闭能力或卸载插件时会恢复此前的提供方；如果另一个 owner 已经选择了更新的路由，则不会覆盖它。不支持的运行时会让能力启用失败，不会谎报路由已经变化。仅当 `enableImageTool: true` 且 tools、filesystem、attachments 服务存在时注册 `view_image`。本地文件继续受 Harness 文件系统边界与大小限制；远程图片只允许不含凭据的公共 HTTP(S)，所有 DNS 结果必须是公共单播地址，每次重定向都会重新验证，并把实际连接固定到已验证地址以关闭 DNS rebinding 缺口。
 
 远程图片的每次重定向跳转共用一个 30 秒期限，覆盖 DNS、连接与响应体读取。取消会立即结束调用方等待；操作系统 DNS 查询可能稍后才完成，但其结果不能在取消或超时后启动新的 HTTP 请求。
 
@@ -28,4 +28,4 @@ Host 将 `llm-openai-codex` 注册为插件自有的能力 settings namespace。
 
 注册前检查现有 provider id；发现 `openai-codex` 已被占用时，给出旧 bundle 或手动 provider 配置的定向迁移提示。boot-free CLI doctor 只报告包/运行时版本、OAuth 路径元数据、能力默认值和安全提示。
 
-Alpha 4.27 固定使用 Harness `0.1.2-rc.1` 开发依赖，并跟随其 pi-ai 版本范围 `^0.84.2`。Node.js 支持范围仍为 `^22.19.0 || >=24.0.0`。keyed `settings.plugin.item` 集成保持不变，客户端类型继续从 Session Controller、Settings、Store 和 Renderer 的所属包导入。已发布兼容性记录列出 Alpha 4.27 与 DSH `0.1.2-rc.1` 的精确组合。资格、额度、模型、服务端上下文容量和后端协议仍由上游控制。测试仅使用临时 OAuth 文档和模拟网络响应，CI 不执行真实认证。
+Alpha 4.34 固定使用 Harness `0.1.5-rc.1` 开发依赖及其精确的 pi-ai `0.85.1`。Node.js 支持范围仍为 `^22.19.0 || >=24.0.0`。keyed `settings.plugin.item` 集成保持不变，客户端类型继续从 Session Controller、Settings、Store 和 Renderer 的所属包导入。已发布兼容性记录列出 Alpha 4.34 与 DSH `0.1.5-rc.1` 的精确组合。资格、额度、模型、服务端上下文容量和后端协议仍由上游控制。测试仅使用临时 OAuth 文档和模拟网络响应，CI 不执行真实认证。
