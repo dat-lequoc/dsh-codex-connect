@@ -296,11 +296,15 @@ export class OpenAICodexAccountStore {
     }
   }
 
-  /** Start or reopen the server-owned authorization from a user click, retaining popup permission. */
-  async signIn(): Promise<void> {
+  /**
+   * Start or reopen the server-owned authorization from a user click.
+   * Defaults to openPopup: false so the user receives the authorization URL directly to copy or open manually.
+   */
+  async signIn(options: { openPopup?: boolean } = {}): Promise<void> {
     if (this.disposed || this.snapshot.busy) return
     this.stopPolling()
-    const popup = window.open('about:blank', '_blank')
+    const openPopup = options.openPopup ?? false
+    const popup = openPopup ? window.open('about:blank', '_blank') : null
     this.popup = popup
     if (popup !== null) popup.opener = null
     const retained = this.snapshot.status.status === 'signed-in' || this.snapshot.status.status === 'reauth-required'

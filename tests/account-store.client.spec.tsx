@@ -201,10 +201,10 @@ describe('shared Models and Plugin account state', () => {
     const account = new OpenAICodexAccountStore()
     const unsubscribe = account.subscribe(() => {})
     await waitFor(() => { expect(account.getSnapshot().status.status).toBe('signed-out') })
-    const firstLogin = account.signIn()
+    const firstLogin = account.signIn({ openPopup: true })
     resolveFirstLogin(new Response(JSON.stringify({ error: 'OpenAI Codex sign-in cancelled' }), { status: 500 }))
     await waitFor(() => { expect(account.getSnapshot().status.status).toBe('error') })
-    const secondLogin = account.signIn()
+    const secondLogin = account.signIn({ openPopup: true })
     await waitFor(() => { expect(loginRequests).toBe(2) })
     resolveCancellationRefresh(json({ status: 'signed-out' }))
     await firstLogin
@@ -307,6 +307,28 @@ describe('shared Models and Plugin account state', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 
+  it('does not open a popup by default and provides the loginUrl for manual copy', async () => {
+    const fetchMock = vi.fn(async (path: string) => {
+      if (path === OPENAI_CODEX_AUTH_STATUS_PATH) return json({ status: 'signed-out' })
+      expect(path).toBe(OPENAI_CODEX_AUTH_LOGIN_PATH)
+      return json({ url: 'https://auth.openai.com/authorize?client_id=123' })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const openSpy = vi.spyOn(window, 'open')
+    const account = new OpenAICodexAccountStore()
+    const unsubscribe = account.subscribe(() => {})
+    try {
+      await waitFor(() => { expect(account.getSnapshot().status.status).toBe('signed-out') })
+      await account.signIn()
+      expect(openSpy).not.toHaveBeenCalled()
+      expect(account.getSnapshot().operation.kind).toBe('waiting-authorization')
+      expect(account.getSnapshot().loginUrl).toBe('https://auth.openai.com/authorize?client_id=123')
+    } finally {
+      unsubscribe()
+      account.dispose()
+    }
+  })
+
   it('closes a pending blank popup when the owning plugin is disposed', async () => {
     const close = vi.fn()
     const replace = vi.fn()
@@ -314,7 +336,7 @@ describe('shared Models and Plugin account state', () => {
     let finish!: (value: Response) => void
     vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(resolve => { finish = resolve })))
     const account = new OpenAICodexAccountStore()
-    const login = account.signIn()
+    const login = account.signIn({ openPopup: true })
     account.dispose()
     finish(json({ url: 'https://auth.openai.com/authorize' }))
     await login

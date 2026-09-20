@@ -195,7 +195,6 @@ describe('OpenAI Codex Plugin configuration card', () => {
     fireEvent.click(await screen.findByRole('button', { name: en.login }))
 
     expect(await screen.findByText('OAuth is unavailable')).toBeTruthy()
-    expect(close).toHaveBeenCalledOnce()
   })
 
   it('renders reauth-required and reuses the sign-in flow without logout', async () => {
@@ -220,12 +219,15 @@ describe('OpenAI Codex Plugin configuration card', () => {
     expect(zh.reauthRequired).toBe('需要重新登录')
 
     fireEvent.click(screen.getByRole('button', { name: en.reauthorize }))
-    await waitFor(() => { expect(replace).toHaveBeenCalledWith('https://auth.openai.com/authorize') })
+    expect(await screen.findByText('https://auth.openai.com/authorize')).toBeTruthy()
+    expect(screen.getByRole('button', { name: en.copyLoginUrl })).toBeTruthy()
+    const link = screen.getByRole('link', { name: en.openLoginInBrowser }) as HTMLAnchorElement
+    expect(link.href).toBe('https://auth.openai.com/authorize')
 
     const paths = fetchMock.mock.calls.map(([input]) => requestPath(input))
     expect(paths).toContain(OPENAI_CODEX_AUTH_LOGIN_PATH)
     expect(paths).not.toContain(OPENAI_CODEX_AUTH_LOGOUT_PATH)
-    expect(popup.opener).toBeNull()
+    expect(window.open).not.toHaveBeenCalled()
   })
 
   it('renders signed-in quota semantics and signs out', async () => {
@@ -311,7 +313,10 @@ describe('OpenAI Codex Plugin configuration card', () => {
     await act(async () => {
       resolveLogin?.(json({ url: 'https://auth.openai.com/authorize' }))
     })
-    await waitFor(() => { expect(replace).toHaveBeenCalledWith('https://auth.openai.com/authorize') })
+    expect(await screen.findByText('https://auth.openai.com/authorize')).toBeTruthy()
+    expect(screen.getByRole('button', { name: en.copyLoginUrl })).toBeTruthy()
+    const link = screen.getByRole('link', { name: en.openLoginInBrowser }) as HTMLAnchorElement
+    expect(link.href).toBe('https://auth.openai.com/authorize')
   })
 
   it('does not update state after unmount and aborts its status request', () => {

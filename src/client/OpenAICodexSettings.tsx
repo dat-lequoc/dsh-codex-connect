@@ -372,6 +372,8 @@ export function AccountFeedback({ t, snapshot, store }: {
   const { status, loginUrl, operationError } = snapshot
   const [copied, setCopied] = useState(false)
   const [copyFailed, setCopyFailed] = useState(false)
+  const [loginUrlCopied, setLoginUrlCopied] = useState(false)
+  const [loginUrlCopyFailed, setLoginUrlCopyFailed] = useState(false)
   const trustedOriginCommand = `dsh plugin --profile web exec dsh-codex-connect trust-origin ${window.location.origin}`
 
   const copyTrustedOriginCommand = async (): Promise<void> => {
@@ -385,20 +387,90 @@ export function AccountFeedback({ t, snapshot, store }: {
     }
   }
 
+  const copyLoginUrl = async (): Promise<void> => {
+    if (loginUrl === undefined) return
+    setLoginUrlCopyFailed(false)
+    try {
+      if (navigator.clipboard?.writeText === undefined) throw new Error('clipboard unavailable')
+      await navigator.clipboard.writeText(loginUrl)
+      setLoginUrlCopied(true)
+      window.setTimeout(() => { setLoginUrlCopied(false) }, 2000)
+    } catch {
+      setLoginUrlCopyFailed(true)
+    }
+  }
+
   return <>
     {loginUrl === undefined ? null : <p style={bodyStyle}>{t('authorizationHelp')}</p>}
-    {loginUrl !== undefined || snapshot.operation.kind === 'waiting-authorization' && !snapshot.busy ? (
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
-        {loginUrl === undefined ? null : <a
-          href={loginUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ ...primaryButtonStyle, display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+    {loginUrl !== undefined ? (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        padding: '12px 14px',
+        borderRadius: 10,
+        border: '1px solid var(--dsw-alias-border-l2)',
+        background: 'var(--dsw-alias-bg-layer-2, #fafbfc)',
+        marginTop: 4,
+      }}>
+        <p style={{ ...bodyStyle, margin: 0, fontWeight: 600 }}>{t('copyLoginUrlHelp')}</p>
+        <code
+          style={{
+            display: 'block',
+            padding: '8px 10px',
+            fontSize: 12,
+            fontFamily: 'monospace',
+            border: '1px solid var(--dsw-alias-border-l2)',
+            borderRadius: 8,
+            background: 'var(--dsw-alias-bg-layer-1, #fff)',
+            color: 'inherit',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            userSelect: 'all',
+          }}
+          title={loginUrl}
         >
-          {t('openLoginInBrowser')}
-        </a>}
+          {loginUrl}
+        </code>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            style={{
+              ...buttonStyle,
+              whiteSpace: 'nowrap',
+              padding: '6px 14px',
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+            onClick={() => { void copyLoginUrl() }}
+          >
+            {loginUrlCopied ? t('copiedLoginUrl') : t('copyLoginUrl')}
+          </button>
+          <a
+            href={loginUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              ...primaryButtonStyle,
+              display: 'inline-flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              padding: '6px 14px',
+              fontSize: 13,
+            }}
+          >
+            {t('openLoginInBrowser')}
+          </a>
+        </div>
+        {loginUrlCopyFailed ? <span style={errorStyle}>{t('copyLoginUrlFailed')}</span> : null}
         {snapshot.operation.kind === 'waiting-authorization' && !snapshot.busy
           ? <ManualCallbackForm key={snapshot.authorizationRevision ?? 0} t={t} store={store} /> : null}
+      </div>
+    ) : snapshot.operation.kind === 'waiting-authorization' && !snapshot.busy ? (
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+        <ManualCallbackForm key={snapshot.authorizationRevision ?? 0} t={t} store={store} />
       </div>
     ) : null}
     {snapshot.callbackFeedback === undefined ? null : <p role="status"
