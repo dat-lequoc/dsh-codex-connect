@@ -213,7 +213,10 @@ describe('assembled Reserve agent routing', () => {
     await send(agent, 'first')
     expect(wires).toHaveLength(1)
     expect(wires[0]).toMatchObject({ model: 'gpt-reserve' })
-    expect(wires[0]).not.toHaveProperty('reasoning')
+    // pi-ai 1.3 materializes an omitted effort as the reserve model's "none" default.
+    const firstRequest = wires[0]!
+    expect(firstRequest).not.toHaveProperty('reasoning', { effort: 'max' })
+    expect(firstRequest).toMatchObject({ reasoning: { effort: 'none' } })
     expect(wires[0]).not.toHaveProperty('service_tier')
     expect(agent.session.requestHeader()?.config).toEqual({ provider: 'openai-codex', model: 'gpt-reserve' })
     expect(agent.session.snapshotEvents().filter(event => event.type === 'request/context').at(-1)?.data)

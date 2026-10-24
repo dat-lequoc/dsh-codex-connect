@@ -3,12 +3,38 @@
 import type WebRuntime from '@deepseek-ai/dsh-web'
 
 const SEARCH_PROVIDER_FIELD = 'searchProviderId'
+/** Shared cosmokit volatile protocol; the Host owns the reference and validates writes. */
+const VOLATILE_WRITE = Symbol.for('cosmokit.volatile.write')
+
+interface VolatileSearchProvider {
+  get(): string | undefined
+  [VOLATILE_WRITE]?: (value: string | undefined) => void
+}
+
+/**
+ * DSH 0.2.1 replaced the writable `searchProviderId` field with a volatile
+ * config reference on the service's config. Read it structurally so this module
+ * still compiles against either host type.
+ */
+function searchProviderRef(web: WebRuntime): VolatileSearchProvider | undefined {
+  const config = Reflect.get(web, 'config') as { searchProvider?: VolatileSearchProvider } | undefined
+  const ref = config?.searchProvider
+  return ref !== undefined && typeof ref.get === 'function' ? ref : undefined
+}
 
 function readSearchProvider(web: WebRuntime): string | undefined {
-  if (!Object.prototype.hasOwnProperty.call(web, SEARCH_PROVIDER_FIELD)) {
+  if (Object.prototype.hasOwnProperty.call(web, SEARCH_PROVIDER_FIELD)) {
+    const value = Reflect.get(web, SEARCH_PROVIDER_FIELD) as unknown
+    if (value !== undefined && typeof value !== 'string') {
+      throw new Error('The installed DeepSeek Harness returned an invalid search route')
+    }
+    return value
+  }
+  const ref = searchProviderRef(web)
+  if (ref === undefined) {
     throw new Error('The installed DeepSeek Harness does not expose the supported search route field')
   }
-  const value = Reflect.get(web, SEARCH_PROVIDER_FIELD) as unknown
+  const value: unknown = ref.get()
   if (value !== undefined && typeof value !== 'string') {
     throw new Error('The installed DeepSeek Harness returned an invalid search route')
   }
@@ -16,7 +42,19 @@ function readSearchProvider(web: WebRuntime): string | undefined {
 }
 
 function writeSearchProvider(web: WebRuntime, provider: string | undefined): void {
-  if (!Reflect.set(web, SEARCH_PROVIDER_FIELD, provider) || readSearchProvider(web) !== provider) {
+  if (Object.prototype.hasOwnProperty.call(web, SEARCH_PROVIDER_FIELD)) {
+    if (!Reflect.set(web, SEARCH_PROVIDER_FIELD, provider) || readSearchProvider(web) !== provider) {
+      throw new Error('The installed DeepSeek Harness refused the search route change')
+    }
+    return
+  }
+  const ref = searchProviderRef(web)
+  const write = ref?.[VOLATILE_WRITE]
+  if (ref === undefined || write === undefined) {
+    throw new Error('The installed DeepSeek Harness does not expose the supported search route field')
+  }
+  write.call(ref, provider)
+  if (readSearchProvider(web) !== provider) {
     throw new Error('The installed DeepSeek Harness refused the search route change')
   }
 }

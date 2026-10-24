@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { createOpenAICodexAdapter, createOpenAICodexProfile } from '../src/adapter.ts'
+import { normalizeContext } from '@earendil-works/pi-ai'
 import { openaiCodexProvider } from '@earendil-works/pi-ai/providers/openai-codex'
 import type { OpenAICodexCredentialStore } from '../src/store.ts'
 import { streamWithCodexRequestDiagnostics, withCodexDiagnosticFetch } from '../src/request-diagnostics.ts'
@@ -80,7 +81,7 @@ describe('issue 219 provider-to-DSH diagnostics', () => {
     const provider = createOpenAICodexProfile(openaiCodexProvider()).piProvider
     const model = provider.getModels().find(item => item.id === options.model)!
     await collect(streamWithCodexRequestDiagnostics(async function* () {
-      for await (const event of provider.streamSimple(model, { messages: [] }, {
+      for await (const event of provider.streamSimple(model, normalizeContext({ messages: [] }), {
         apiKey: token, transport: 'sse', sessionId: 'fixture-session', fetch: custom, onResponse: hook, onPayload: payload, maxRetries: 2,
       })) { if (event.type === 'error') yield failure }
     }, options))
@@ -104,7 +105,8 @@ describe('issue 219 provider-to-DSH diagnostics', () => {
       expect(error(chunks).code).toBe('PI_AI_ERROR')
       const headers = new Headers(fetch.mock.calls[0]?.[1]?.headers)
       expect(headers.get('originator')).toBe('pi')
-      expect(headers.get('user-agent')).toContain('pi')
+      // 0.2.1 emits its own product user-agent; the pi originator identity is above.
+      expect(headers.get('user-agent')).toContain('deepseek-harness/')
       expect(headers.get('x-client-request-id')).toBe(diagnostic(chunks)['clientRequestId'])
     } finally { requests.dispose() }
   })

@@ -75,7 +75,7 @@ export async function checkInstalledRuntime(profilePackagePath, hostPackagePath 
     const listed = await ctx.llm.listModels(PROVIDER_ID)
     const models = await Promise.all(listed.map(model => ctx.llm.resolveModelInfo(PROVIDER_ID, model.id)))
     const projection = validateRuntimeProjection(providers, models)
-    for (const id of ['gpt-6-sol', 'gpt-6-luna']) {
+    for (const id of ['gpt-6.1-sol', 'gpt-6-sol', 'gpt-6-luna']) {
       const model = models.find(model => model.id === id)
       if (model?.reasoning?.efforts.map(effort => effort.id).join(',') !== 'low,medium,high,xhigh,max') {
         throw new Error(`runtime is missing calibrated GPT-6 compatibility for ${id}`)
@@ -93,11 +93,11 @@ export async function checkInstalledRuntime(profilePackagePath, hostPackagePath 
       throw new Error(`runtime retained the ${PROVIDER_ID} provider after plugin disposal`)
     }
 
-    const requestMetrics = await checkInstalledMetrics(importHost, OpenAICodex, packagePath)
     const reserveTransitionsVerified = await checkInstalledReserve(importHost, OpenAICodex)
     const nativeCompactionLifecycle = await checkInstalledNativeCompaction(packagePath, hostPath)
     const toolsManifest = JSON.parse(await readFile(createRequire(hostPath).resolve('@deepseek-ai/dsh-tools/package.json'), 'utf8'))
     const images = await checkInstalledImages(importHost, OpenAICodex, toolsManifest)
+    const requestMetrics = await checkInstalledMetrics(importHost, OpenAICodex, packagePath)
 
     return {
       schemaVersion: JSON_SCHEMA_VERSION,

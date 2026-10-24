@@ -1,7 +1,7 @@
 /** OpenAI Codex adapter assembled from public dsh-llm-pi-ai extension points. */
 
 import { defaultProviderAuthContext, InMemoryCredentialStore } from '@earendil-works/pi-ai'
-import type { Context as PiContext, Provider, SimpleStreamOptions } from '@earendil-works/pi-ai'
+import type { Provider, SimpleStreamOptions, TranscriptContext } from '@earendil-works/pi-ai'
 import { openaiCodexProvider } from '@earendil-works/pi-ai/providers/openai-codex'
 import { codexProviderContext } from './pi-context.ts'
 import { resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
@@ -12,6 +12,7 @@ import type { ResolvedPiAiProviderProfile } from '@deepseek-ai/dsh-llm-pi-ai'
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import type { OpenAICodexCredentialStore } from './store.ts'
 import { readOpenAICodexRequestAuth } from './auth.ts'
+import { OpenAICodexRequestAuthError } from './auth-error.ts'
 import { OPENAI_CODEX_PROVIDER } from './store.ts'
 import type { FastModeRegistry } from './fast-mode.ts'
 import type { OpenAICodexModelCatalogEntry } from './model-contract.ts'
@@ -62,7 +63,7 @@ export function withOpenAICodexFastMode(
   const streamSimple = provider.streamSimple
   return {
     ...provider,
-    streamSimple(model, context: PiContext, options?: SimpleStreamOptions) {
+    streamSimple(model, context: TranscriptContext, options?: SimpleStreamOptions) {
       const sessionId = options?.sessionId
       const enabled = provider.id === OPENAI_CODEX_PROVIDER
         && model.provider === OPENAI_CODEX_PROVIDER
@@ -115,7 +116,7 @@ function requestProvider(
   const streamSimple = configured.streamSimple
   return {
     ...configured,
-    streamSimple(model, context: PiContext, options?: SimpleStreamOptions) {
+    streamSimple(model, context: TranscriptContext, options?: SimpleStreamOptions) {
       const proxyUrl = resolveProxyUrl?.()
       const operation = () => streamSimple.call(configured, model, codexProviderContext(context), withCodexDiagnosticFetch(options, backendRequests))
       return backendRequests?.runStream(operation) ?? proxyManager?.runStream(proxyUrl, operation) ?? operation()
@@ -288,7 +289,16 @@ export function createOpenAICodexAdapter(
     }
 
     override async listModels(providerId: string) {
-      const catalog = (await super.listModels(providerId)).filter(model => model.id !== OPENAI_CODEX_RESERVE_MODEL)
+      let models
+      try {
+        models = await super.listModels(providerId)
+      } catch (error) {
+        // DSH 0.2.1 discovery hides a route whose credential is missing; the
+        // host contract is an empty catalog, not a thrown auth error.
+        if (error instanceof OpenAICodexRequestAuthError && error.code === 'MISSING_CREDENTIAL') return []
+        throw error
+      }
+      const catalog = models.filter(model => model.id !== OPENAI_CODEX_RESERVE_MODEL)
       const configured = visibleModelIds?.()
       if (configured === undefined) return catalog
       const visible = new Set(configured)

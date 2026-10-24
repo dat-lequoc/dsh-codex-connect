@@ -58,7 +58,7 @@ describe('generated images outside the folded process', () => {
       { root: orphan },
       { root: later },
     ]
-    expect(selectTurnImageResults(toolRows, 10).map(item => item.callId)).toEqual(['direct', 'nested', 'orphan'])
+    expect(selectTurnImageResults(toolRows as never, 10).map(item => item.callId)).toEqual(['direct', 'nested', 'orphan'])
   })
 
   it('renders the image card in the completed turn tail without opening processing details', async () => {

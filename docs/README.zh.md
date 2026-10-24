@@ -18,21 +18,21 @@ Codex Connect 为标准 Harness agent loop 添加 `openai-codex` 模型提供方
 
 | 要求 | 已验证组合 |
 |---|---|
-| Codex Connect | `0.1.0-alpha.4.54` |
-| DeepSeek Harness | `0.1.7-rc.1`、`0.1.7-rc.2`、`0.2.0-rc.1` 或 `0.2.0-rc.2`（包版本必须一致） |
+| Codex Connect | `0.1.0-alpha.4.55` |
+| DeepSeek Harness | `0.1.7-rc.1`、`0.1.7-rc.2`、`0.2.0-rc.1`、`0.2.0-rc.2` 或 `0.2.1-rc.2`（包版本必须一致） |
 | Node.js | `^22.19.0 \|\| >=24.0.0` |
 | 账户 | 通过 ChatGPT OAuth 使用所请求的 Codex 模型；可用性由 OpenAI 决定 |
 
-截至 2026-09-30，npm `alpha` 指向 4.54，`latest` 仍为 4.50；本次发布没有提升 `latest`。安装这些 DSH 组合请使用下方精确版本命令；会移动的 npm tag 不保证其他宿主版本的兼容性。
+截至 2026-10-17，npm `alpha` 指向 4.55，`latest` 仍为 4.50；本次发布没有提升 `latest`。安装这些 DSH 组合请使用下方精确版本命令；会移动的 npm tag 不保证其他宿主版本的兼容性。
 
-Alpha 4.54 在 DSH 0.2.0-rc.2 调用固定版本的 Codex 提供方时保留初始系统指令和工具定义，修正宿主与插件使用不同提供方库版本时的诊断，并补强 Canary 的普通请求检查。继续保留 Alpha 4.53 的核心维护改动、已有任务恢复与安全检查，以及 4.52 的[可选本地请求计量](request-metrics.zh.md)。配置私有目录后才采集；未知用量不当作零。不恢复 Task，也不升级模型库或 OAuth。
+Alpha 4.55 增加对 DSH 0.2.1-rc.2 的兼容：固定提供方库升级到 pi-ai 1.3.0 及其规范化 transcript-context 契约，移除 0.2.1 不再发布的运行时 invariant 伴生插件，并在配置表单中跟随 0.2.1 的 settings-mirror 快照形状。继续保留 Alpha 4.54 对初始系统指令和工具定义的保留、提供方库版本不一致时的诊断、Canary 的普通请求检查，以及 4.53 的核心维护、已有任务恢复与安全检查和 4.52 的[可选本地请求计量](request-metrics.zh.md)。配置私有目录后才采集；未知用量不当作零。不恢复 Task，也不升级 OAuth 流程。
 
-该安装包已通过上方四个精确 DSH 版本的无凭据安装及运行回归验证。Task 控件仍暂停：激活请求会被拒绝，现有宿主的浏览器回归中，新 Session 不显示这些控件。这些检查不代表真实 OAuth 或完整用户验收；跨 Harness 升级迁移旧任务授权尚未验证。较旧组合及其任务行为见[安装与升级](../INSTALL.md)。
+该安装包已通过上方各精确 DSH 版本的无凭据安装及运行回归验证。Task 控件仍暂停：激活请求会被拒绝，现有宿主的浏览器回归中，新 Session 不显示这些控件。这些检查不代表真实 OAuth 或完整用户验收；跨 Harness 升级迁移旧任务授权尚未验证。较旧组合及其任务行为见[安装与升级](../INSTALL.md)。
 
 ### 1. 安装
 
 ```sh
-dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.54
+dsh plugin --profile web add dsh-codex-connect@0.1.0-alpha.4.55
 dsh web
 ```
 

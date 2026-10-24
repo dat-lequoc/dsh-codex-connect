@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { OAuthCredential } from '@earendil-works/pi-ai'
 import { openaiCodexProvider } from '@earendil-works/pi-ai/providers/openai-codex'
 import {
   createOpenAICodexAdapter,
@@ -17,8 +18,26 @@ import type { OpenAICodexCredentialStore } from '../src/store.ts'
 import { OPENAI_CODEX_PROVIDER } from '../src/store.ts'
 import { Config } from '../src/index.ts'
 
+/**
+ * A signed-in store: DSH 0.2.1 model discovery resolves the route credential
+ * before returning the catalog, so an empty store now yields an empty list.
+ */
+function authenticatedStore(): OpenAICodexCredentialStore {
+  const access = 'header.' + Buffer.from(JSON.stringify({
+    'https://api.openai.com/auth': { chatgpt_account_id: 'fixture-account' },
+  })).toString('base64url') + '.signature'
+  const credential: OAuthCredential = {
+    type: 'oauth', access, refresh: 'fixture-refresh', expires: Date.now() + 3_600_000, accountId: 'fixture-account',
+  }
+  const store = {
+    captureActiveAccount: async () => store,
+    read: async () => credential,
+  }
+  return store as unknown as OpenAICodexCredentialStore
+}
+
 describe('OpenAI Codex rc.2 adapter profile', () => {
-  it.each(['gpt-6-sol', 'gpt-6-luna'])('adds missing %s without duplicating or overwriting native metadata', id => {
+  it.each(['gpt-6.1-sol', 'gpt-6-sol', 'gpt-6-luna'])('adds missing %s without duplicating or overwriting native metadata', id => {
     const provider = openaiCodexProvider()
     const baseline = provider.getModels().filter(model => model.id !== id)
     const patched = withOpenAICodexModels({ ...provider, getModels: () => baseline })
@@ -33,7 +52,7 @@ describe('OpenAI Codex rc.2 adapter profile', () => {
     expect(result.filter(model => model.id === id)).toEqual([{ ...native,
       thinkingLevelMap: { off: null, minimal: null, xhigh: 'xhigh', max: 'max' } }])
     expect(native.thinkingLevelMap).toEqual({ minimal: 'minimal' })
-    for (const old of baseline.filter(model => model.id !== OPENAI_CODEX_ASTRA_MODEL_ID && !model.id.startsWith('gpt-6-'))) {
+    for (const old of baseline.filter(model => model.id !== OPENAI_CODEX_ASTRA_MODEL_ID && !model.id.startsWith('gpt-6'))) {
       expect(result.find(model => model.id === old.id)).toBe(old)
     }
   })
@@ -92,7 +111,7 @@ describe('OpenAI Codex rc.2 adapter profile', () => {
     const catalog = openAICodexModelCatalog()
     expect(catalog.length).toBeGreaterThan(2)
     const adapter = createOpenAICodexAdapter(
-      {} as OpenAICodexCredentialStore,
+      authenticatedStore(),
       () => undefined,
       undefined,
       () => [catalog[1]!.id, catalog[0]!.id, catalog[1]!.id],
@@ -108,7 +127,7 @@ describe('OpenAI Codex rc.2 adapter profile', () => {
 
   it('advertises the full catalog when no visible-model list is configured', async () => {
     const adapter = createOpenAICodexAdapter(
-      {} as OpenAICodexCredentialStore,
+      authenticatedStore(),
       () => undefined,
     )
     const listed = await adapter.listModels(OPENAI_CODEX_PROVIDER)
@@ -121,7 +140,7 @@ describe('OpenAI Codex rc.2 adapter profile', () => {
   })
 
   it('resolves every advertised model and prepares its request without accessing credentials', async () => {
-    const adapter = createOpenAICodexAdapter({} as OpenAICodexCredentialStore, () => undefined)
+    const adapter = createOpenAICodexAdapter(authenticatedStore(), () => undefined)
     const listed = await adapter.listModels(OPENAI_CODEX_PROVIDER)
     expect(listed).toContainEqual(expect.objectContaining({ id: 'gpt-5.6-luna' }))
     for (const model of listed) {

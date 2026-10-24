@@ -133,7 +133,7 @@ export async function runNativeLifecyclePhase(phase, { root, importHost, plugin,
     for (const module of [llm, sessions, projections, system, tools, agents]) await ctx.plugin(module.default)
     await ctx.plugin(loop.default, { agents: [] })
     await ctx.plugin(meter.default)
-    await ctx.plugin(persistence.default, { root: join(root, 'sessions'), compression, packChunks: true })
+    await ctx.plugin(persistence, { root: join(root, 'sessions'), compression, packChunks: true })
     await ctx.plugin(compaction.default, { auto: false })
     await ctx.plugin(plugin, { enableNativeCompaction: phase === 'write' || phase === 'failure-paths' })
     ctx.tools.register({

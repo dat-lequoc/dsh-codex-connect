@@ -1,5 +1,6 @@
 /** Ordinary transport must work without loading any task scope implementation. */
 import { expect, it, vi } from 'vitest'
+import { normalizeContext } from '@earendil-works/pi-ai'
 import { openaiCodexProvider } from '@earendil-works/pi-ai/providers/openai-codex'
 import { createOpenAICodexProfile } from '../src/adapter.ts'
 import { OpenAICodexBackendRequests } from '../src/backend-request.ts'
@@ -13,10 +14,11 @@ it('dispatches an ordinary profile without task services or rewriting its retry/
   const stream = vi.fn(() => { throw new Error('synthetic provider reached') })
   const profile = createOpenAICodexProfile({ ...provider, streamSimple: stream })
   const options = { sessionId: 'ordinary-session', maxRetries: 2 }
-  expect(() => profile.piProvider.streamSimple(provider.getModels()[0]!, { messages: [] }, options))
+  const context = normalizeContext({ messages: [] })
+  expect(() => profile.piProvider.streamSimple(provider.getModels()[0]!, context, options))
     .toThrow('synthetic provider reached')
   expect(stream).toHaveBeenCalledOnce()
-  expect(stream.mock.calls[0]).toEqual([provider.getModels()[0], { messages: [] }, expect.objectContaining(options)])
+  expect(stream.mock.calls[0]).toEqual([provider.getModels()[0], context, expect.objectContaining(options)])
 })
 
 it('uses a provider policy only when the owner explicitly supplies it', () => {
@@ -25,7 +27,7 @@ it('uses a provider policy only when the owner explicitly supplies it', () => {
   const wrap = vi.fn(value => ({ ...value, streamSimple: stream }))
   const profile = createOpenAICodexProfile(provider, undefined, undefined, undefined, undefined, undefined, wrap)
   expect(wrap).toHaveBeenCalledOnce()
-  expect(() => profile.piProvider.streamSimple(provider.getModels()[0]!, { messages: [] }))
+  expect(() => profile.piProvider.streamSimple(provider.getModels()[0]!, normalizeContext({ messages: [] })))
     .toThrow('explicit policy reached')
 })
 

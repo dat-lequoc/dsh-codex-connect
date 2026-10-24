@@ -6,6 +6,7 @@ import { Context } from '@deepseek-ai/cordis'
 import LlmRuntime from '@deepseek-ai/dsh-llm'
 import { openaiCodexProvider } from '@earendil-works/pi-ai/providers/openai-codex'
 import * as plugin from '../src/index.ts'
+import { OpenAICodexCredentialStore } from '../src/store.ts'
 import { loadSettingsPlugin } from './support/settings-loader-fixture.ts'
 
 const model = 'gpt-5.6-sol'
@@ -19,6 +20,11 @@ let home: string | undefined
 async function boot(config: plugin.Config = {}): Promise<Context> {
   home = await mkdtemp(join(tmpdir(), 'codex-context-window-'))
   vi.stubEnv('DSH_HOME', home)
+  // 0.2.1 model discovery resolves the route credential before listing.
+  const seeded = new OpenAICodexCredentialStore()
+  await seeded.modify(plugin.OPENAI_CODEX_PROVIDER, async () => ({
+    type: 'oauth', access: 'fixture-access', refresh: 'fixture-refresh', accountId: 'fixture-account', expires: Date.now() + 3_600_000,
+  }))
   ctx = new Context()
   await ctx.plugin(LlmRuntime)
   await loadSettingsPlugin(ctx, home, 'dsh-codex-connect', plugin, config)

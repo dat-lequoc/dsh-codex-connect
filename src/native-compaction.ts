@@ -4,15 +4,18 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { randomUUID } from 'node:crypto'
 import {
   createAssistantMessageEventStream,
+  getCurrentSystemPrompt,
+  getCurrentTools,
+  normalizeContext,
 } from '@earendil-works/pi-ai'
 import type {
   AssistantMessage,
   AssistantMessageEventStream,
   Api,
-  Context as PiContext,
   Model,
   Provider,
   SimpleStreamOptions,
+  TranscriptContext,
   Usage,
 } from '@earendil-works/pi-ai'
 import {
@@ -472,7 +475,7 @@ async function compactResponse(response: Response, retained: readonly unknown[])
 
 async function requestNativeCompaction(
   model: Model<Api>,
-  context: PiContext,
+  context: TranscriptContext,
   options: SimpleStreamOptions | undefined,
   scope: NativeCompactionScope,
 ): Promise<CompactResponse> {
@@ -482,16 +485,17 @@ async function requestNativeCompaction(
   const messages = context.messages.slice(0, -1)
   const converted = convertResponsesMessages(
     model,
-    { ...context, messages },
+    normalizeContext({ messages }),
     CODEX_TOOL_CALL_PROVIDERS,
     { includeSystemPrompt: false },
   )
   const input = expandScopedInput(converted, scope)
   const retained = retainedNativeCompactionInput(input)
   const compat = model.compat as { supportsStrictMode?: boolean; supportsOpenAIGrammarTools?: boolean } | undefined
-  const tools = context.tools === undefined || context.tools.length === 0
+  const currentTools = getCurrentTools(messages)
+  const tools = currentTools.length === 0
     ? undefined
-    : convertResponsesTools(context.tools, {
+    : convertResponsesTools(currentTools, {
         strict: null,
         supportsStrictMode: compat?.supportsStrictMode ?? true,
         supportsOpenAIGrammarTools: compat?.supportsOpenAIGrammarTools ?? false,
@@ -504,7 +508,7 @@ async function requestNativeCompaction(
     store: false,
     stream: true,
     input: [...input, { type: 'compaction_trigger' }],
-    instructions: context.systemPrompt ?? '',
+    instructions: getCurrentSystemPrompt(messages),
     ...(tools === undefined ? {} : { tools }),
     tool_choice: 'auto',
     parallel_tool_calls: true,
@@ -566,7 +570,7 @@ async function requestNativeCompaction(
 function standardStream(
   provider: Provider,
   model: Model<Api>,
-  context: PiContext,
+  context: TranscriptContext,
   options: SimpleStreamOptions | undefined,
   scope: NativeCompactionScope | undefined,
 ): AssistantMessageEventStream {
@@ -584,7 +588,7 @@ function standardStream(
 function nativeCompactionStream(
   provider: Provider,
   model: Model<Api>,
-  context: PiContext,
+  context: TranscriptContext,
   options: SimpleStreamOptions | undefined,
   scope: NativeCompactionScope,
 ): AssistantMessageEventStream {

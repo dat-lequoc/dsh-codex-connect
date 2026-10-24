@@ -7,6 +7,7 @@ export const OPENAI_CODEX_MODEL_CATALOG_PATH = '/plugins/dsh-codex-connect/model
 export const OPENAI_CODEX_CONTEXT_LIMIT_SOURCE = 'https://github.com/openai/codex/blob/39598ed17885970828acd42a6370131ed0190a98/codex-rs/models-manager/models.json'
 
 const CONFIGURATION_LIMITS: Readonly<Record<string, number>> = Object.freeze({
+  'gpt-6.1-sol': 872_000,
   'gpt-6-astra': 872_000,
   'gpt-6-sol': 872_000,
   'gpt-6-luna': 872_000,

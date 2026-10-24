@@ -24,6 +24,10 @@ export function withAdaptiveTaskProvider(provider: Provider): Provider {
     task.signal.throwIfAborted()
     if (model.provider !== 'openai-codex' || model.id !== task.route.model) taskFailure('TASK_ROUTE_CHANGED')
     const before = options?.onPayload
+    // pi-ai 1.3.0 materializes an omitted effort as the model's "off" level instead of
+    // omitting reasoning, so that exact provider default is not a task route change.
+    const providerDefault = task.hostDefaultEfforts !== undefined && options?.reasoning === undefined
+      && model.reasoning && model.thinkingLevelMap?.off !== null ? model.thinkingLevelMap?.off ?? 'none' : undefined
     return provider.streamSimple(model, context, { ...options, transport: 'sse', maxRetries: 0,
       sessionId: task.cacheKey, signal: options?.signal === undefined ? task.signal : AbortSignal.any([options.signal, task.signal]),
       async onPayload(payload, payloadModel) {
@@ -34,7 +38,7 @@ export function withAdaptiveTaskProvider(provider: Provider): Provider {
         const reasoning = 'reasoning' in next ? next.reasoning : undefined
         const effort = reasoning !== null && typeof reasoning === 'object' && 'effort' in reasoning ? reasoning.effort : undefined
         if (task.hostDefaultEfforts === undefined ? effort !== task.route.effort
-          : effort !== undefined && !task.hostDefaultEfforts.includes(String(effort))) taskFailure('TASK_ROUTE_CHANGED')
+          : effort !== undefined && effort !== providerDefault && !task.hostDefaultEfforts.includes(String(effort))) taskFailure('TASK_ROUTE_CHANGED')
         return next
       },
     })
